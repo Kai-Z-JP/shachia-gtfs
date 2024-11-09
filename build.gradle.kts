@@ -28,7 +28,6 @@ kotlin {
     jvmToolchain(21)
 }
 
-
 publishing {
     repositories {
         maven {
