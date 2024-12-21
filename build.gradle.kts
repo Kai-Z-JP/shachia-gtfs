@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "jp.kaiz"
-version = "0.0.1"
+version = "0.0.2"
 
 repositories {
     mavenCentral()
@@ -13,12 +13,24 @@ repositories {
 
 kotlin {
     jvm()
-    js().browser()
+    js {
+        binaries.executable()
+        browser {
+        }
+    }
 
     sourceSets {
         val commonMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+                implementation("app.softwork:kotlinx-serialization-csv:0.0.18")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+            }
+        }
+
+        val jsMain by getting {
+            dependencies {
+                implementation(npm("jszip", "3.10.1"))
             }
         }
     }
