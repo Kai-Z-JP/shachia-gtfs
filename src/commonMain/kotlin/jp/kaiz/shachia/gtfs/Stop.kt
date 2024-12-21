@@ -51,10 +51,15 @@ data class Stop(
     val platformCode: String?,
 ) {
     enum class LocationType(val value: Int) {
+        @SerialName("0")
         STOP(0),
+        @SerialName("1")
         STATION(1),
+        @SerialName("2")
         ENTRANCE(2),
+        @SerialName("3")
         GENERIC_NODE(3),
+        @SerialName("4")
         BOARDING_AREA(4),
     }
 }

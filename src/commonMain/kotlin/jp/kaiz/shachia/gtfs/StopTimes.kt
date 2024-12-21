@@ -54,16 +54,24 @@ data class StopTime(
     val timepoint: Int?,
 ) {
     enum class PickupType(val value: Int) {
+        @SerialName("0")
         REGULAR(0),
+        @SerialName("1")
         NONE(1),
+        @SerialName("2")
         MUST_PHONE_AGENCY(2),
+        @SerialName("3")
         MUST_COORDINATE_WITH_DRIVER(3),
     }
 
     enum class DropOffType(val value: Int) {
+        @SerialName("0")
         REGULAR(0),
+        @SerialName("1")
         NONE(1),
+        @SerialName("2")
         MUST_PHONE_AGENCY(2),
+        @SerialName("3")
         MUST_COORDINATE_WITH_DRIVER(3),
     }
 }
