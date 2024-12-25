@@ -4,8 +4,10 @@ import app.softwork.serialization.csv.CSVFormat
 import jp.kaiz.shachia.gtfs.csv.CSVUnSequentiallyFormat
 import jp.kaiz.shachia.gtfs.io.zip.ZipEntry
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 
+@Serializable
 @OptIn(ExperimentalSerializationApi::class)
 data class GTFS(
     val agency: Agency,
