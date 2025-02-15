@@ -5,16 +5,11 @@ import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StringFormat
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.SerialKind
-import kotlinx.serialization.descriptors.StructureKind
-import kotlinx.serialization.descriptors.elementDescriptors
-import kotlinx.serialization.descriptors.elementNames
+import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.AbstractDecoder
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
-import kotlin.Nothing
 import kotlin.jvm.JvmOverloads
 
 @ExperimentalSerializationApi
@@ -93,37 +88,36 @@ class CSVDecoder(
 @ExperimentalSerializationApi
 sealed class CSVUnSequentiallyFormat(
     private val separator: String,
-    private val lineSeparator: String,
+    private val lineSeparator: Regex,
     override val serializersModule: SerializersModule
 ) : StringFormat {
     private class Custom(
         separator: String,
-        lineSeparator: String,
+        lineSeparator: Regex,
         serializersModule: SerializersModule
     ) : CSVUnSequentiallyFormat(separator, lineSeparator, serializersModule)
 
     companion object Default : CSVUnSequentiallyFormat(
         separator = ",",
-        lineSeparator = "\n",
+        lineSeparator = Regex("\r?\n"),
         serializersModule = EmptySerializersModule()
     ) {
         @JvmOverloads
         operator fun invoke(
             separator: String = ",",
-            lineSeparator: String = "\n",
+            lineSeparator: Regex = Regex("\r?\n"),
             serializersModule: SerializersModule = EmptySerializersModule()
         ): CSVUnSequentiallyFormat =
             Custom(separator, lineSeparator, serializersModule)
     }
 
     val bom = "\uFEFF"
-    val cr = "\r"
 
     override fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, string: String): T {
         deserializer.descriptor.checkForLists()
-        val lines = string.replace(bom, "").replace(cr, "").split(lineSeparator)
-        val data = lines.dropLastWhile { it.isEmpty() }
-            .map(String::parseCsvLine)
+
+        val lines = (if (string.startsWith(bom)) string.replaceFirst(bom, "") else string).split(lineSeparator)
+        val data = lines.dropLastWhile(String::isEmpty).map(String::parseCsvLine)
         return deserializer.deserialize(
             decoder = CSVDecoder(
                 header = data[0],
@@ -146,7 +140,7 @@ sealed class CSVUnSequentiallyFormat(
         }
 
         serializer.serialize(
-            encoder = CSVEncoder(this, separator, lineSeparator, serializersModule),
+            encoder = CSVEncoder(this, separator, "\n", serializersModule),
             value = value
         )
     }

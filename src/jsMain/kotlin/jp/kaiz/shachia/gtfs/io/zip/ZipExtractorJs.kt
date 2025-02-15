@@ -1,35 +1,26 @@
 package jp.kaiz.shachia.gtfs.io.zip
 
-import kotlinx.coroutines.await
+import `<dynamic>`.get
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.get
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 class ZipExtractorJs : ZipExtractor {
     override suspend fun extract(zipBytes: ByteArray): List<ZipEntry> {
-        val jsZip = JSZip()
-        val loadedZip = jsZip.loadAsync(zipBytes.toTypedArray()).await()
-        val entries = mutableListOf<ZipEntry>()
-
-        val files = loadedZip.files
-        val fileNames = js("Object").keys(files) as Array<String>
-
-        for (fileName in fileNames) {
-            val file = loadedZip.file(fileName)
-            if (file != null && !file.dir) {
-                val data: Uint8Array = file.async("uint8array").await()
-                entries.add(
-                    ZipEntry(
-                        fileName = fileName,
-                        uncompressedSize = data.length.toLong(),
-                        compressedSize = data.length.toLong(),
-                        compressionMethod = 8,
-                        data = data.toByteArray()
-                    )
-                )
+        val unzipped = unzipAsyncSuspend(zipBytes)
+        val keys = js("Object.keys(unzipped)") as Array<String>
+        val zipEntries = mutableListOf<ZipEntry>()
+        for (fileName in keys) {
+            val fileData = unzipped[fileName] as Uint8Array
+            val byteArray = ByteArray(fileData.length) { i ->
+                fileData[i]
             }
-        }
 
-        return entries
+            zipEntries.add(ZipEntry(fileName, byteArray))
+        }
+        return zipEntries
     }
 }
 
@@ -41,5 +32,20 @@ fun Uint8Array.toByteArray(): ByteArray {
     return byteArray
 }
 
+fun ByteArray.toUint8Array(): Uint8Array {
+    return Uint8Array(this.toTypedArray())
+}
+
+suspend fun unzipAsyncSuspend(zipData: ByteArray): dynamic = suspendCoroutine { cont ->
+    val zipUint8Array: Uint8Array = zipData.toUint8Array()
+
+    unzipAsync(zipUint8Array) { error, unzipped ->
+        if (error != null) {
+            cont.resumeWithException(RuntimeException("unzip failed: $error"))
+        } else {
+            cont.resume(unzipped)
+        }
+    }
+}
 
 actual fun createZipExtractor(): ZipExtractor = ZipExtractorJs()

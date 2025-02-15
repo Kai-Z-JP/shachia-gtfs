@@ -8,18 +8,10 @@ class ZipExtractorJvm : ZipExtractor {
         val zis = ZipInputStream(zipBytes.inputStream())
         val zipEntries = zis.map {
             val fileName = it.name
-            val compressedSize = it.compressedSize
-            val uncompressedSize = it.size
-            val compressionMethod = it.method
-
-            val data = zis.readBytes()
 
             ZipEntry(
                 fileName = fileName,
-                compressedSize = compressedSize,
-                uncompressedSize = uncompressedSize,
-                compressionMethod = compressionMethod,
-                data = data
+                data = zis.readBytes()
             )
         }
         return zipEntries

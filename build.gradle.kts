@@ -25,12 +25,14 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
                 implementation("app.softwork:kotlinx-serialization-csv:0.0.18")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
             }
         }
 
         val jsMain by getting {
             dependencies {
-                implementation(npm("jszip", "3.10.1"))
+                implementation(npm("fflate", "0.8.2"))
+                implementation(npm("papaparse", "5.4.1"))
             }
         }
     }
